@@ -1,0 +1,662 @@
+/* ============================================================
+   styles-responsive.css — full responsive layer
+   Breakpoints:
+     ≤1100px  condensed desktop (already in styles.css)
+     ≤900px   tablet — sidebar becomes slide-in drawer
+     ≤640px   mobile — single column, condensed topbar
+     ≤420px   small mobile — minimum layout
+============================================================ */
+
+/* Prevent any horizontal overflow site-wide */
+html, body { overflow-x: hidden; max-width: 100%; }
+img, svg, video { max-width: 100%; }
+
+/* Auth page — make safe at all widths */
+.auth { min-width: 0; }
+.auth__form { min-width: 0; }
+.auth__form-inner { min-width: 0; }
+.auth__form-top { flex-wrap: wrap; row-gap: var(--s-2); }
+.auth__row { flex-wrap: wrap; row-gap: var(--s-2); }
+
+/* Long link inside auth row shouldn't blow up layout */
+.auth__forgot, .auth__switch a { word-break: break-word; }
+
+/* ---------- Hamburger button (shown only on tablet/mobile) ---- */
+.topbar__menu {
+  display: none;
+  align-items: center; justify-content: center;
+  width: 40px; height: 40px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.topbar__menu:hover { background: var(--bg-subtle); border-color: var(--border-strong); }
+.topbar__menu svg { width: 18px; height: 18px; }
+
+/* Sidebar drawer backdrop */
+.sidebar-backdrop {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(15, 18, 28, 0.45);
+  z-index: 40;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.sidebar-backdrop.is-open {
+  display: block;
+  opacity: 1;
+}
+
+/* ============================================================
+   ≤900px — Tablet: sidebar becomes drawer
+============================================================ */
+@media (max-width: 900px) {
+  /* App becomes single column, sidebar overlays */
+  .app { grid-template-columns: 1fr !important; }
+
+  /* Hamburger visible */
+  .topbar__menu { display: inline-flex; }
+
+  /* Sidebar — slide-in drawer */
+  /* LTR: slides in from LEFT */
+  .sidebar {
+    position: fixed;
+    top: 0; bottom: 0; left: 0;
+    right: auto;
+    width: min(280px, 85vw);
+    height: 100vh;
+    z-index: 500;
+    transform: translateX(-100%);
+    transition: transform 260ms cubic-bezier(.4, 0, .2, 1);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.18);
+    overflow-y: auto;
+    will-change: transform;
+  }
+  /* RTL: slides in from RIGHT */
+  html[dir="rtl"] .sidebar {
+    left: auto;
+    right: 0;
+    transform: translateX(100%);
+    box-shadow: -4px 0 24px rgba(0,0,0,0.18);
+  }
+  .sidebar.is-open {
+    transform: translateX(0) !important;
+  }
+
+  /* Backdrop */
+  .sidebar-backdrop {
+    z-index: 490 !important;
+  }
+
+  /* Topbar adjustments */
+  .topbar {
+    padding: var(--s-4) var(--s-5);
+    gap: var(--s-3);
+  }
+  .topbar__title h1 { font-size: var(--fs-md); }
+  .topbar__title p { display: none; }
+
+  /* Search shrinks */
+  .search { min-width: 0; flex: 1; max-width: 280px; }
+  .search .kbd { display: none; }
+
+  /* Page padding tightens */
+  .page { padding: var(--s-5); }
+
+  /* Dashboard — consistent 2-col stats + collapsed inner grids */
+  .stats-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); margin-bottom: var(--s-5); }
+  .dash-analytics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-3); }
+  .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  /* Welcome row meta tag sits below cleanly */
+  .welcome-row { margin-bottom: var(--s-5); }
+
+  /* Hide auth feature side (already at 1100, but reinforce) */
+  .auth__feature { display: none; }
+  .auth { grid-template-columns: 1fr !important; }
+  /* Auth form — tighter padding at tablet sizes */
+  .auth__form { padding: var(--s-6) var(--s-5); }
+  .auth__form-inner { max-width: 100%; width: 100%; }
+
+  /* Layout grids collapse */
+  .ai-shell { grid-template-columns: 1fr; height: auto; min-height: calc(100vh - 200px); }
+  .ai-rail { display: none; }
+
+  /* Calendar: show side stacked above main (instead of hiding) */
+  .cal-shell { grid-template-columns: 1fr; gap: var(--s-4); }
+  .cal-side { display: flex; flex-direction: row; gap: var(--s-3); flex-wrap: wrap; }
+  .cal-side > .card.cal-mini { flex: 1 1 280px; min-width: 0; }
+  .cal-side > .card:not(.cal-mini) { flex: 1 1 280px; min-width: 0; }
+
+  .meet-stats { grid-template-columns: repeat(2, 1fr); }
+
+  /* Meeting cards: stack vertically */
+  .meet-card {
+    grid-template-columns: 72px 1fr;
+    gap: var(--s-3);
+    padding: var(--s-3) var(--s-4);
+  }
+  .meet-card__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .meet-card__link { max-width: 180px; }
+
+  /* Calendar agenda */
+  .cal-agenda__day { grid-template-columns: 60px 1fr; gap: var(--s-3); }
+  .cal-agenda__event { grid-template-columns: 60px 1fr; }
+  .cal-agenda__event > :last-child { grid-column: 1 / -1; }
+
+  /* Profile field rows: stack label above value */
+  .field-row {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: var(--s-2) var(--s-3);
+    padding: var(--s-3) 0;
+    align-items: center;
+  }
+  .field-row__label { grid-column: 1; grid-row: 1; }
+  .field-row > :nth-child(3) { grid-column: 2; grid-row: 1; justify-self: end; }
+  .field-row__value { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* ============================================================
+   ≤640px — Mobile
+============================================================ */
+@media (max-width: 640px) {
+  /* Topbar: search becomes icon, lang switch compacts */
+  .topbar {
+    padding: var(--s-3) var(--s-4);
+  }
+  .topbar__actions { gap: var(--s-1); }
+  .search {
+    width: 40px; height: 40px;
+    min-width: 40px; max-width: 40px;
+    padding: 0;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: var(--r-sm);
+  }
+  .search input { display: none; }
+  .search svg { width: 16px; height: 16px; }
+  .lang-switch button { padding: 4px 8px; font-size: 11px; }
+
+  /* Pages: tight padding */
+  .page { padding: var(--s-4); }
+
+  /* Welcome row */
+  .welcome-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-3);
+    margin-bottom: var(--s-4);
+  }
+  .welcome-row > div { width: 100%; }
+  .welcome-row h2 { font-size: var(--fs-lg); }
+  .welcome-row p { font-size: var(--fs-xs); line-height: 1.5; }
+  .welcome-row .semester-tag { font-size: 11px; padding: 4px 8px; }
+
+  /* All multi-column grids → keep stats at 2 cols, others single column */
+  .stats-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
+  .stat { padding: var(--s-4); }
+  .stat__value { font-size: var(--fs-xl); }
+  .course-grid { grid-template-columns: 1fr; }
+  .majors-grid { grid-template-columns: 1fr; }
+  .materials-grid { grid-template-columns: repeat(2, 1fr); gap: var(--s-3); }
+  .meet-stats { grid-template-columns: 1fr; }
+  .ai-suggest-grid { grid-template-columns: 1fr; }
+  .event-form__row { grid-template-columns: 1fr; }
+
+  /* Dashboard inner grids collapse */
+  .dash-analytics-grid { grid-template-columns: 1fr; gap: var(--s-3); }
+  .quick-grid { grid-template-columns: 1fr; gap: var(--s-3); }
+  .grid-2-1 { gap: var(--s-4); }
+
+  /* Schedule item: tighter time column */
+  .schedule-item { grid-template-columns: 52px 1fr auto; gap: var(--s-2); padding: var(--s-3); }
+  .schedule-item__time { font-size: var(--fs-xs); }
+  .schedule-item__course-name { font-size: var(--fs-sm); }
+  .schedule-item__course-meta { font-size: var(--fs-xs); line-height: 1.4; }
+
+  /* AI strip stacks button below text */
+  .ai-strip { grid-template-columns: 1fr; gap: var(--s-3); padding: var(--s-4); }
+  .ai-strip__left { gap: var(--s-3); }
+  .ai-strip__icon { width: 36px; height: 36px; }
+  .ai-strip__title { font-size: var(--fs-sm); }
+  .ai-strip__desc { font-size: var(--fs-xs); }
+  .ai-strip .btn { width: 100%; justify-content: center; }
+
+  /* Cards/header tighten */
+  .card { padding: var(--s-4); }
+  .card__header { margin-bottom: var(--s-3); flex-wrap: wrap; gap: var(--s-2); }
+  .card__title { font-size: var(--fs-md); }
+  .card__sub { font-size: var(--fs-xs); }
+
+  /* Filter chip row: horizontal scroll */
+  .course-toolbar,
+  .materials-toolbar,
+  .meetings-toolbar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+  .course-toolbar > *,
+  .materials-toolbar > *,
+  .meetings-toolbar > * { flex-shrink: 0; }
+
+  /* Calendar grid cells get smaller */
+  .cal-grid { grid-auto-rows: minmax(72px, auto); }
+  .cal-weekdays > div,
+  .cal-weekdays span { font-size: 10px; padding: 6px 2px; }
+  .cal-day { padding: 4px; gap: 2px; }
+  .cal-day__num { font-size: 11px; }
+  .cal-event { font-size: 9px; padding: 1px 4px; }
+
+  /* Calendar week view: scroll horizontally */
+  .cal-week-wrap,
+  .cal-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .cal-week { min-width: 720px; }
+
+  /* Calendar agenda gets tighter */
+  .cal-agenda__day { grid-template-columns: 1fr; gap: var(--s-2); }
+  .cal-agenda__day > :first-child {
+    font-size: 11px; color: var(--text-muted);
+    border-bottom: 1px solid var(--border-subtle); padding-bottom: 4px;
+  }
+  .cal-agenda__event { padding: var(--s-2) var(--s-3); }
+
+  /* Cal toolbar: smaller buttons, wrap */
+  .cal-toolbar { gap: var(--s-2); }
+  .cal-toolbar__title { font-size: var(--fs-sm); }
+  .cal-view-switch button,
+  .meet-view-switch button { padding: 6px 10px; font-size: 11px; }
+
+  /* Cal side stacks single col on small phones */
+  .cal-side { flex-direction: column; }
+
+  /* Meeting card: condensed */
+  .meet-card { padding: var(--s-3); gap: var(--s-2); }
+  .meet-card__when { padding: 6px 8px; }
+  .meet-card__title { font-size: var(--fs-sm); }
+  .meet-card__meta { font-size: 10px; gap: var(--s-2); }
+  .meet-card__link { max-width: 140px; font-size: 10px; }
+
+  /* Profile */
+  .profile-grid { gap: var(--s-4); }
+  .profile-hero { padding: var(--s-4); }
+  .profile-hero__avatar { width: 64px; height: 64px; font-size: var(--fs-md); }
+  .profile-hero__name { font-size: var(--fs-md); }
+  .profile-hero__meta { grid-template-columns: repeat(3, 1fr); gap: var(--s-2); }
+  .profile-hero__meta-item .value { font-size: var(--fs-sm); }
+
+  /* Modals */
+  .modal { max-width: calc(100vw - 24px) !important; max-height: calc(100vh - 24px); }
+  .modal__body { max-height: 70vh; overflow-y: auto; }
+
+  /* Tables go horizontal scroll */
+  .table-wrap, .mat-row, .timeline-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Notification panel takes full width */
+  .notif-panel { width: calc(100vw - 24px); }
+
+  /* AI conversation header — tighter */
+  .ai-conv__header {
+    padding: var(--s-3) var(--s-4);
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    align-items: center;
+  }
+  .ai-conv__title-wrap {
+    flex: 1;
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+  .ai-conv__title-wrap h3 { font-size: var(--fs-md); line-height: 1.3; min-width: 0; }
+  .ai-conv__badge { font-size: 10px; padding: 2px 8px; }
+
+  /* AI intro condensed */
+  .ai-conv__body { padding: var(--s-4) var(--s-4); }
+  .ai-intro { margin: var(--s-3) auto; }
+  .ai-intro__spark { width: 56px; height: 56px; margin-bottom: var(--s-4); }
+  .ai-intro__spark svg { width: 24px; height: 24px; }
+  .ai-intro h4 { font-size: var(--fs-lg); line-height: 1.3; }
+  .ai-intro p { font-size: var(--fs-xs); margin-bottom: var(--s-4); }
+
+  /* AI suggest cards stack */
+  .ai-suggest-grid { grid-template-columns: 1fr; gap: var(--s-2); margin-top: var(--s-4); }
+  .ai-suggest { padding: var(--s-3); }
+
+  /* AI tips wrap nicely */
+  .ai-tips { gap: var(--s-1); margin-top: var(--s-4); justify-content: flex-start; }
+  .ai-tips__label { width: 100%; text-align: start; margin-bottom: var(--s-1); }
+
+  /* AI composer */
+  .ai-composer { padding: var(--s-3) var(--s-4); gap: var(--s-2); }
+  .ai-composer__bar { padding: var(--s-2); }
+  .ai-composer__send { padding: var(--s-2) var(--s-3); font-size: var(--fs-xs); }
+  .ai-composer__send span { display: none; }
+  .ai-composer__chips {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+  .ai-composer__chips::-webkit-scrollbar { display: none; }
+  .ai-composer__chips > * { flex-shrink: 0; }
+  .ai-composer__hint { display: none; }
+
+  /* Group chat (course detail) */
+  .chat--group { height: auto; min-height: 420px; }
+  .chat__group-header { padding: var(--s-2) var(--s-3); gap: var(--s-2); flex-wrap: wrap; }
+  .chat__group-icon { width: 32px; height: 32px; }
+  .chat__group-icon svg { width: 14px; height: 14px; }
+  .chat__group-title { font-size: var(--fs-xs); }
+  .chat__group-sub { font-size: 10px; }
+  .chat__group-avatars { margin-inline-start: auto; }
+  .chat__group-av { width: 24px; height: 24px; font-size: 9px; }
+  .chat--group .chat__msg-avatar { width: 28px; height: 28px; font-size: 10px; }
+  .chat--group .chat__msg { max-width: 92%; }
+  .chat__msg-meta { font-size: 10px; }
+  .chat--group .chat__msg-bubble { font-size: var(--fs-xs); }
+
+  /* ===== AUTH / LOGIN / SIGNUP ===== */
+  .auth__form { padding: var(--s-5) var(--s-4); align-items: flex-start; }
+  .auth__form-inner { max-width: 100% !important; width: 100%; }
+  .auth__form-top { flex-wrap: wrap; gap: var(--s-2); }
+  .auth__form h1 { font-size: var(--fs-lg); }
+  .auth__form-sub { font-size: var(--fs-xs); margin-bottom: var(--s-4); }
+  .auth__row { flex-wrap: wrap; gap: var(--s-2); row-gap: var(--s-3); }
+  .auth__remember { font-size: 11px; }
+  .auth__forgot { font-size: 11px; }
+  .input { padding: var(--s-2) var(--s-3); }
+  .input input { min-width: 0; font-size: var(--fs-sm); }
+
+  /* Signup wizard tighter */
+  .signup-progress { gap: var(--s-1); margin: var(--s-3) 0 var(--s-4); }
+  .signup-progress__label { font-size: 10px; }
+  .signup-progress__num { width: 24px; height: 24px; font-size: 10px; }
+  .signup-step__nav { flex-direction: column-reverse; gap: var(--s-2); }
+  .signup-step__nav .btn { width: 100%; }
+  .signup-row { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   ≤420px — Small mobile
+============================================================ */
+@media (max-width: 420px) {
+  .materials-grid { grid-template-columns: 1fr; }
+  .stats-strip { grid-template-columns: 1fr; }
+  .topbar { padding: var(--s-2) var(--s-3); }
+  .page { padding: var(--s-3); }
+  .lang-switch { display: none; }
+  .topbar__title h1 { font-size: var(--fs-md); }
+
+  /* Sidebar drawer width adapts */
+  .sidebar { width: min(280px, 88vw); }
+
+  /* Bigger tap targets for small numbers */
+  .nav-item { padding: var(--s-3); }
+
+  /* Reduce welcome heading */
+  .welcome-row h2 { font-size: var(--fs-md); }
+
+  /* Signup unis & majors */
+  .signup-uni { padding: var(--s-2) var(--s-3); }
+  .signup-uni__icon { width: 32px; height: 32px; }
+
+  /* Meet card actions full width on tiny screens */
+  .meet-card__actions .btn { flex: 1; min-width: 0; }
+
+  /* Profile meta: tiny screens stack to 2 cols if too cramped */
+  .profile-hero__meta { gap: 8px; }
+  .profile-hero__meta-item .label { font-size: 10px; }
+  .profile-hero__meta-item .value { font-size: var(--fs-sm); }
+
+  /* Calendar day cells very tight */
+  .cal-grid { grid-auto-rows: minmax(56px, auto); }
+  .cal-event { display: none; }
+  .cal-day__num { font-size: 10px; }
+  .cal-day__more { font-size: 9px; }
+
+  /* Auth: full padding tighter */
+  .auth__form { padding: var(--s-4) var(--s-3); }
+}
+
+/* ============================================================
+   Touch-friendly tap targets globally on touch devices
+============================================================ */
+@media (hover: none) and (pointer: coarse) {
+  .btn, .icon-btn, .nav-item, .filter-chip { min-height: 40px; }
+}
+
+/* ============================================================
+   Print / very wide adjustments — leave as-is
+============================================================ */
+
+/* ============================================================
+   NEW COMPONENTS — Dashboard, Profile, Auth (mobile fixes)
+============================================================ */
+
+/* ─── Dashboard new classes ─── */
+@media (max-width: 900px) {
+  .dash-wrap { gap: var(--s-4); }
+
+  /* Stats: 2 columns on tablet */
+  .dash-stats { grid-template-columns: repeat(2, 1fr); gap: var(--s-3); }
+  .dash-stat { padding: var(--s-3); }
+  .dash-stat__value { font-size: 1.3rem; }
+
+  /* Two-column grid → single column */
+  .dash-grid { grid-template-columns: 1fr; gap: var(--s-4); }
+  .dash-col  { width: 100%; }
+
+  /* Quick access 3 cols → 2 cols */
+  .dash-quick { grid-template-columns: repeat(2, 1fr); }
+
+  /* Analytics 3 cols → 3 cols (keep, small enough) */
+  .dash-analytics { grid-template-columns: repeat(3, 1fr); gap: var(--s-2); }
+  .dash-analytics__val { font-size: 1.1rem; }
+
+  /* Greeting */
+  .dash-greeting__title { font-size: 1.4rem; }
+
+  /* AI card: stack on small */
+  .dash-ai-card { flex-direction: column; gap: var(--s-3); padding: var(--s-4); }
+  .dash-ai-card__btn { width: 100%; text-align: center; }
+
+  /* Profile new layout */
+  .prof-layout {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: "sidebar" "main" !important;
+  }
+  [dir="rtl"] .prof-layout {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: "sidebar" "main" !important;
+  }
+  .prof-card { flex-direction: row; text-align: start; padding: var(--s-4); flex-wrap: wrap; }
+  .prof-avatar { width: 60px; height: 60px; font-size: 1.3rem; margin-bottom: 0; }
+  .prof-stats { justify-content: flex-start; }
+  .prof-achievements__list { gap: var(--s-2); }
+
+  /* Logout & password modal */
+  .pw-modal { max-width: calc(100vw - 32px); }
+  .logout-dialog { max-width: calc(100vw - 32px); }
+
+  /* Auth centered */
+  .auth-centered__card { padding: var(--s-5) var(--s-4); }
+}
+
+@media (max-width: 640px) {
+  /* Dashboard greeting */
+  .dash-greeting__title { font-size: 1.2rem; }
+  .dash-greeting__sub   { font-size: var(--fs-xs); }
+  .dash-semester-badge  { font-size: 11px; padding: 3px 10px; }
+
+  /* Stats: 2 cols on mobile */
+  .dash-stats { grid-template-columns: repeat(2, 1fr); gap: var(--s-2); }
+  .dash-stat  { flex-direction: column; gap: var(--s-2); padding: var(--s-3); }
+  .dash-stat__icon { width: 28px; height: 28px; }
+  .dash-stat__value { font-size: 1.2rem; }
+  .dash-stat__label { font-size: 10px; }
+  .dash-stat__sub   { font-size: 10px; }
+  .dash-mini-bars   { height: 18px; }
+
+  /* Dashboard cards */
+  .dash-card { padding: var(--s-4); }
+  .dash-ai-card { padding: var(--s-3); gap: var(--s-2); }
+  .dash-ai-card__icon { width: 32px; height: 32px; }
+  .dash-ai-card__title { font-size: var(--fs-sm); }
+  .dash-ai-card__desc  { font-size: var(--fs-xs); }
+
+  /* Quick access: 2 cols */
+  .dash-quick { grid-template-columns: repeat(2, 1fr); gap: var(--s-2); }
+  .dash-quick__tile { padding: var(--s-3) var(--s-2); }
+  .dash-quick__name { font-size: var(--fs-xs); }
+  .dash-quick__desc { display: none; }
+
+  /* Analytics: 1 col */
+  .dash-analytics { grid-template-columns: 1fr; gap: var(--s-2); }
+  .dash-analytics__cell { padding: var(--s-3); }
+
+  /* Deadlines */
+  .dash-dl__title { font-size: var(--fs-xs); }
+  .dash-dl__days  { font-size: 10px; }
+
+  /* Lectures */
+  .dash-lec { gap: var(--s-2); padding: var(--s-2); }
+  .dash-lec__time { font-size: var(--fs-sm); min-width: 38px; }
+  .dash-lec__name { font-size: var(--fs-xs); }
+  .dash-lec__meta { font-size: 10px; }
+
+  /* Activity */
+  .dash-activity__text { font-size: var(--fs-xs); }
+  .dash-activity__time { font-size: 10px; }
+
+  /* Profile layout: fully stacked */
+  .prof-layout { gap: var(--s-3); }
+  .prof-card { padding: var(--s-4); flex-direction: column; text-align: center; }
+  .prof-avatar { margin: 0 auto; }
+  .prof-stats { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+  .prof-row { flex-wrap: wrap; gap: var(--s-2); min-height: auto; padding: var(--s-3) 0; }
+  .prof-row__meta { flex: 0 0 100%; }
+  .prof-row__mid  { flex: 1; }
+  .prof-section { padding: var(--s-4); }
+  .prof-section__head { padding-bottom: var(--s-3); margin-bottom: var(--s-1); }
+  .prof-main__title { font-size: var(--fs-lg); }
+  .prof-achievements__list { gap: var(--s-2); }
+  .prof-badge { font-size: 10px; padding: 2px 8px; }
+
+  /* Password modal */
+  .pw-modal__body { padding: var(--s-4); gap: var(--s-3); }
+  .pw-modal__actions { padding: var(--s-3) var(--s-4); }
+  .pw-modal__head { padding: var(--s-4); gap: var(--s-2); }
+  .pw-modal__icon { width: 36px; height: 36px; }
+  .pw-modal__title { font-size: var(--fs-md); }
+
+  /* Auth centered page */
+  .auth-centered { padding: var(--s-3); }
+  .auth-centered__card { padding: var(--s-4) var(--s-3); border-radius: 16px; }
+  .auth-centered__topbar { padding: var(--s-2) 0; }
+  .auth-centered__logo svg { max-width: 280px; }
+  .auth-centered__feature-h2 { font-size: var(--fs-md); }
+  .auth-centered__feature-p  { font-size: var(--fs-xs); }
+  .auth-centered__title { font-size: var(--fs-lg); }
+  .auth-centered__sub   { font-size: var(--fs-xs); }
+
+  /* Signup */
+  .signup-unis   { gap: var(--s-2); }
+  .signup-uni    { padding: var(--s-2) var(--s-3); }
+  .signup-majors { gap: var(--s-2); }
+  .signup-major  { padding: var(--s-2) var(--s-3); }
+  .signup-review__row { flex-direction: column; gap: 2px; }
+}
+
+@media (max-width: 420px) {
+  /* Stats: 1 col on very small phones */
+  .dash-stats { grid-template-columns: 1fr; }
+
+  /* Quick access: 1 col */
+  .dash-quick { grid-template-columns: 1fr; }
+
+  /* Greeting even smaller */
+  .dash-greeting__title { font-size: 1.1rem; }
+
+  /* Profile rows: simplify */
+  .prof-row { flex-direction: column; align-items: flex-start; gap: var(--s-1); }
+  .prof-row__action { align-self: flex-end; margin-top: calc(-1 * var(--s-5)); }
+
+  /* Dashboard two col stays 2 cols but tighter */
+  .dash-lec__time { display: none; }
+
+  /* Auth */
+  .auth-centered__logo svg { max-width: 220px; }
+  .btn-google span { font-size: var(--fs-xs); }
+}
+
+/* ============================================================
+   TOUCH FIXES — prevent ghost taps & improve mobile response
+============================================================ */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove tap highlight flash */
+  * { -webkit-tap-highlight-color: transparent; }
+
+  /* All interactive elements: proper touch handling */
+  button, a, [role="button"], [role="switch"],
+  .nav-item, .btn, .icon-btn, .filter-chip,
+  .quick-tile, .prof-edit-btn, .prof-save-btn, .prof-toggle,
+  .logout-dialog__btn, .pw-modal__actions .btn,
+  .ai-mode-chip, .ai-suggest, .ai-conv-item,
+  .course-card, .catalog-row__btn, .signup-uni, .signup-major,
+  .dash-quick__tile {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+  }
+
+  /* Ensure nav items have enough tap area */
+  .nav-item {
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+
+  /* Logout dialog — make sure buttons are tappable */
+  .logout-dialog__actions {
+    gap: 10px;
+  }
+  .logout-dialog__btn {
+    min-height: 44px;
+    font-size: 15px;
+  }
+
+  /* Password modal buttons */
+  .pw-modal__actions .btn {
+    min-height: 44px;
+  }
+}
+
+/* Extra safety: sidebar items always get pointer events on mobile */
+@media (max-width: 900px) {
+  .sidebar * { pointer-events: auto; }
+  .sidebar .nav-item,
+  .sidebar .sidebar__user-card,
+  .sidebar .sidebar__logout-btn,
+  .sidebar .sidebar__theme-btn {
+    position: relative;
+    z-index: 1;
+    pointer-events: auto !important;
+  }
+
+  /* Make sure topbar doesn't overlap sidebar when open */
+  .topbar { z-index: 30 !important; }
+}

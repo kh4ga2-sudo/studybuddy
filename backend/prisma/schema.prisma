@@ -1,0 +1,417 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int               @id @default(autoincrement())
+  name            String
+  email           String            @unique
+  password        String
+  phone           String            @default("")
+  initials        String            @default("")
+  major_id        String            @default("major_1")
+  university      String            @default("")
+  year            String            @default("3")
+  gpa             String            @default("0.00")
+  bio             String            @default("")
+  bio_ar          String            @default("")
+  notifs          Int               @default(1)
+  theme           String            @default("light")
+  lang            String            @default("en")
+  role            String            @default("student")
+  created_at      DateTime          @default(now())
+
+  major           Major?            @relation(fields: [major_id], references: [id])
+  enrollments     Enrollment[]
+  notifications   Notification[]
+  aiConversations AiConversation[]
+  invites         Invite[]
+  chatMessages    ChatMessage[]
+  events          Event[]           @relation("EventCreator")
+  notes           Note[]
+  progressLogs    ProgressLog[]
+  quizAttempts    QuizAttempt[]
+  communityPosts  CommunityPost[]
+  comments        CommunityComment[]
+  achievements    UserAchievement[]
+  supportReports  SupportReport[]
+
+  @@map("users")
+}
+
+model Major {
+  id        String          @id
+  icon      String
+  name_en   String
+  name_ar   String
+  desc_en   String          @default("")
+  desc_ar   String          @default("")
+  courses   Int             @default(0)
+  credits   Int             @default(0)
+  students  Int             @default(0)
+
+  users     User[]
+  catalog   CatalogCourse[]
+
+  @@map("majors")
+}
+
+model CatalogCourse {
+  id          String          @id
+  code        String          @unique
+  name_en     String
+  name_ar     String
+  major_id    String
+  credits     Int             @default(3)
+  level       Int             @default(100)
+  instructor  String          @default("")
+  students    Int             @default(0)
+  created_at  DateTime        @default(now())
+
+  major       Major           @relation(fields: [major_id], references: [id])
+  enrollments Enrollment[]
+  events      Event[]
+  materials   Material[]
+  chatMessages ChatMessage[]
+  notes       Note[]
+  resources   Resource[]
+  progressLogs ProgressLog[]
+  quizAttempts QuizAttempt[]
+  quizBank    QuizBank[]
+  communityPosts CommunityPost[]
+
+  @@index([major_id])
+  @@index([level])
+  @@map("catalog")
+}
+
+model Enrollment {
+  id          Int            @id @default(autoincrement())
+  user_id     Int
+  course_id   String
+  progress    Int            @default(0)
+  grade       String?
+  status      String         @default("inprogress")
+  next_class  String?
+  color_var   String         @default("--accent")
+  created_at  DateTime       @default(now())
+
+  user        User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course      CatalogCourse  @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, course_id])
+  @@index([course_id])
+  @@map("enrollments")
+}
+
+model Event {
+  id              String          @id
+  type            String
+  course_id       String?
+  title_ar        String
+  title_en        String
+  start_time      DateTime
+  end_time        DateTime
+  link            String          @default("")
+  host            String          @default("")
+  host_en         String          @default("")
+  attendees       String          @default("[]")
+  attendees_count Int             @default(0)
+  created_by      Int?
+
+  course          CatalogCourse?  @relation(fields: [course_id], references: [id], onDelete: SetNull)
+  creator         User?           @relation("EventCreator", fields: [created_by], references: [id], onDelete: SetNull)
+
+  @@index([course_id])
+  @@map("events")
+}
+
+model Notification {
+  id          String      @id
+  user_id     Int
+  kind        String
+  title_en    String
+  title_ar    String
+  text_en     String
+  text_ar     String
+  time_en     String      @default("")
+  time_ar     String      @default("")
+  unread      Int         @default(1)
+  view        String      @default("courses")
+  created_at  DateTime    @default(now())
+
+  user        User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("notifications")
+}
+
+model Material {
+  id          String          @id
+  course_id   String
+  category    String
+  title       String
+  title_ar    String          @default("")
+  date        String          @default("")
+  extra       String          @default("{}")
+  created_at  DateTime        @default(now())
+
+  course      CatalogCourse   @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  @@index([course_id, category])
+  @@map("materials")
+}
+
+model QuizBank {
+  id          String         @id
+  course_id   String?
+  text_en     String
+  text_ar     String
+  options     String
+  correct     String
+  explain_en  String         @default("")
+  explain_ar  String         @default("")
+  difficulty  String         @default("medium")
+
+  course      CatalogCourse? @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  @@index([course_id])
+  @@map("quiz_bank")
+}
+
+model QuizAttempt {
+  id          String         @id
+  user_id     Int
+  course_id   String
+  score       Int            @default(0)
+  total       Int            @default(0)
+  answers     String         @default("[]")
+  created_at  DateTime       @default(now())
+
+  user        User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course      CatalogCourse  @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, course_id])
+  @@map("quiz_attempts")
+}
+
+model AiConversation {
+  id          String       @id
+  user_id     Int
+  title       String
+  created_at  DateTime     @default(now())
+
+  user        User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  messages    AiMessage[]
+
+  @@index([user_id])
+  @@map("ai_conversations")
+}
+
+model AiMessage {
+  id          Int            @id @default(autoincrement())
+  conv_id     String
+  role        String
+  text        String
+  file_name   String?
+  file_type   String?
+  file_data   String?
+  created_at  DateTime       @default(now())
+
+  conversation AiConversation @relation(fields: [conv_id], references: [id], onDelete: Cascade)
+
+  @@index([conv_id])
+  @@map("ai_messages")
+}
+
+model Room {
+  id          String     @id
+  code        String
+  name_en     String
+  name_ar     String
+  status      String     @default("available")
+  capacity    Int        @default(8)
+  current     Int        @default(0)
+
+  @@map("rooms")
+}
+
+model Invite {
+  id          String     @id
+  user_id     Int
+  title_en    String
+  title_ar    String
+  from_en     String
+  from_ar     String
+  when_time   DateTime
+  status      String     @default("pending")
+
+  user        User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("invites")
+}
+
+model ChatMessage {
+  id              Int            @id @default(autoincrement())
+  course_id       String
+  user_id         Int
+  author_name     String
+  author_initials String
+  text            String
+  created_at      DateTime       @default(now())
+
+  course          CatalogCourse  @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  user            User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([course_id])
+  @@map("chat_messages")
+}
+
+model Note {
+  id          String         @id
+  user_id     Int
+  course_id   String
+  title       String
+  body        String
+  pinned      Boolean        @default(false)
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
+
+  user        User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course      CatalogCourse  @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, course_id])
+  @@map("notes")
+}
+
+model Resource {
+  id          String         @id
+  course_id   String
+  type        String         @default("link")
+  title_en    String
+  title_ar    String
+  url         String         @default("#")
+  source      String         @default("StudyBuddy")
+  created_at  DateTime       @default(now())
+
+  course      CatalogCourse  @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  @@index([course_id])
+  @@map("resources")
+}
+
+model ProgressLog {
+  id          String         @id
+  user_id     Int
+  course_id   String
+  metric      String
+  value       Int
+  note        String         @default("")
+  created_at  DateTime       @default(now())
+
+  user        User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course      CatalogCourse  @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, course_id])
+  @@map("progress_logs")
+}
+
+model CommunityPost {
+  id          String         @id
+  user_id     Int
+  course_id   String?
+  title       String
+  body        String
+  likes       Int            @default(0)
+  created_at  DateTime       @default(now())
+
+  user        User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course      CatalogCourse? @relation(fields: [course_id], references: [id], onDelete: SetNull)
+  comments    CommunityComment[]
+
+  @@index([course_id])
+  @@map("community_posts")
+}
+
+model CommunityComment {
+  id          String          @id
+  post_id     String
+  user_id     Int
+  body        String
+  created_at  DateTime        @default(now())
+
+  post        CommunityPost   @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  user        User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([post_id])
+  @@map("community_comments")
+}
+
+model Achievement {
+  id          String             @id
+  code        String             @unique
+  title_en    String
+  title_ar    String
+  points      Int                @default(0)
+  icon        String             @default("star")
+
+  users       UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id             String       @id
+  user_id        Int
+  achievement_id String
+  earned_at      DateTime     @default(now())
+
+  user           User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  achievement    Achievement  @relation(fields: [achievement_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, achievement_id])
+  @@map("user_achievements")
+}
+
+
+model PasswordResetCode {
+  id          String    @id
+  email       String
+  code_hash   String
+  expires_at  DateTime
+  used_at     DateTime?
+  created_at  DateTime  @default(now())
+  ip          String    @default("")
+  user_agent  String    @default("")
+
+  @@index([email])
+  @@index([expires_at])
+  @@map("password_reset_codes")
+}
+
+model SupportReport {
+  id          String    @id
+  user_id     Int?
+  name        String    @default("")
+  email       String    @default("")
+  category    String    @default("general")
+  subject     String
+  message     String
+  status      String    @default("open")
+  admin_note  String    @default("")
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  user        User?     @relation(fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([user_id])
+  @@index([created_at])
+  @@map("support_reports")
+}

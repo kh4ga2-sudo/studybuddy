@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import { auth } from '../middleware/auth.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import * as c from '../controllers/communityController.js';
+const router = Router();
+router.get('/posts', asyncHandler(c.listPosts));
+router.post('/posts', auth, asyncHandler(c.createPost));
+router.put('/posts/:id/like', auth, asyncHandler(c.likePost));
+router.post('/posts/:id/comments', auth, asyncHandler(c.comment));
+export default router;

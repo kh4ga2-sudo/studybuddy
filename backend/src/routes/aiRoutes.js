@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import { auth } from '../middleware/auth.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import * as c from '../controllers/aiController.js';
+const router = Router();
+router.get('/conversations', auth, asyncHandler(c.listConversations));
+router.post('/conversations', auth, asyncHandler(c.createConversation));
+router.get('/conversations/:id/messages', auth, asyncHandler(c.listMessages));
+router.post('/conversations/:id/messages', auth, asyncHandler(c.sendMessage));
+router.delete('/conversations/:id', auth, asyncHandler(c.deleteConversation));
+export default router;

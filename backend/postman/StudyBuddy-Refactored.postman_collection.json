@@ -1,0 +1,69 @@
+{
+  "info": {
+    "name": "StudyBuddy Refactored API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "Login Student",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"student@studybuddy.edu\", \"password\": \"password123\"}"
+        },
+        "url": "{{baseUrl}}/auth/login"
+      }
+    },
+    {
+      "name": "Catalog",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/catalog?limit=20"
+      }
+    },
+    {
+      "name": "Quiz Bank",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/quiz?limit=20"
+      }
+    },
+    {
+      "name": "Analytics",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/analytics"
+      }
+    }
+  ]
+}

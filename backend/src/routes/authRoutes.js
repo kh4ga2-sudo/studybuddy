@@ -1,0 +1,13 @@
+import { Router } from 'express';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { auth } from '../middleware/auth.js';
+import * as c from '../controllers/authController.js';
+const router = Router();
+router.post('/login', asyncHandler(c.login));
+router.post('/signup', asyncHandler(c.signup));
+router.post('/google', asyncHandler(c.googleAuth));
+router.post('/password/forgot', asyncHandler(c.forgotPassword));
+router.post('/password/verify-code', asyncHandler(c.verifyResetCode));
+router.post('/password/reset', asyncHandler(c.resetPassword));
+router.put('/password', auth, asyncHandler(c.changePassword));
+export default router;

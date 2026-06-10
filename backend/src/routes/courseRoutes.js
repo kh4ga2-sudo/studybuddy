@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import { auth } from '../middleware/auth.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import * as c from '../controllers/courseController.js';
+const router = Router();
+router.get('/', auth, asyncHandler(c.listCourses));
+router.post('/', auth, asyncHandler(c.enrollCourse));
+router.delete('/:courseId', auth, asyncHandler(c.unenrollCourse));
+router.put('/:courseId/progress', auth, asyncHandler(c.updateCourseProgress));
+export default router;

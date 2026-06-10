@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import { auth } from '../middleware/auth.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import * as c from '../controllers/quizController.js';
+const router = Router();
+router.get('/', asyncHandler(c.listQuiz));
+router.get('/:id', asyncHandler(c.getQuestion));
+router.get('/attempts', auth, asyncHandler(c.listAttempts));
+router.post('/attempts', auth, asyncHandler(c.createAttempt));
+router.delete('/attempts/:id', auth, asyncHandler(c.deleteAttempt));
+export default router;
